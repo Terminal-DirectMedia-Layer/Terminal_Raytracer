@@ -36,7 +36,7 @@ jobs:
         run: |
           pacman-key --init
           pacman -Syuu --noconfirm
-          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp
+          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp libevdev
       - name: Checkout the project
         uses: actions/checkout@v4
         with:
@@ -55,7 +55,7 @@ jobs:
         run: |
           pacman-key --init
           pacman -Syuu --noconfirm
-          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp
+          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp libevdev
       - name: Checkout the project
         uses: actions/checkout@v4
         with:
