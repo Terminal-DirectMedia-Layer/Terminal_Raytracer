@@ -1,0 +1,73 @@
+name: Rayetracé CI/CD pipeline
+run-name: ${{ github.actor }} triggered the project's pipeline
+on: push
+
+jobs:
+  check-coding-style:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/epitech/coding-style-checker
+    steps:
+      - name: Checkout the project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Launch the coding style checker
+        run: check.sh $(pwd) $(pwd)
+      - name: Extract and generate a viewable report
+        run: |
+          REPORTS_FILE="coding-style-reports.log"
+
+          while read line; do
+              offending_file="$(echo "$line" | cut -d':' -f1 | cut -c 3-)"
+              offending_line="$(echo "$line" | cut -d':' -f2)"
+              error_level="$(echo "$line" | cut -d':' -f3 | cut -c 2-)"
+              error_type="$(echo "$line" | cut -d':' -f4)"
+              
+              echo "::error file=$offending_file,line=$offending_line,title=$error_level coding style error::$error_type"
+          done < "$REPORTS_FILE" 
+
+  compile-project:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Update the system
+        run: |
+          pacman-key --init
+          pacman -Syuu --noconfirm
+          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp
+      - name: Checkout the project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compile the project
+        run: |
+          cmake -B build -S .
+          cmake --build build
+
+  check-executable:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    steps:
+      - name: Update the system
+        run: |
+          pacman-key --init
+          pacman -Syuu --noconfirm
+          pacman -S --noconfirm base-devel sfml cmake libpng libconfig openmp
+      - name: Checkout the project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compile the project
+        run: |
+          cmake -B build -S .
+          cmake --build build
+      - name: Check if the file is there and valid
+        run: |
+          EXECUTABLE="raytracer"
+
+          if [[ ! -x "$EXECUTABLE" ]]; then
+              echo "::error file=$EXECUTABLE::The project's executable does not exist or is not executable"
+          fi 
